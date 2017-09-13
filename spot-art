@@ -1,0 +1,134 @@
+#!/bin/bash
+# spot-art
+#
+# display external album art for the currently playing
+# song on Spotify on macOS
+#
+# this script will launch Spotify if it is not already running
+#
+# uses MPV to display images, if available. Otherwise falls back
+# to qlmanage (macOS builtin interface to the "quick look" feature)
+#
+# Version 0.1
+# (C) 2017 Phillip Heikoop
+########################################################################## 
+
+##########
+# config #
+##########
+
+# directory for album art
+art_dir=~/Desktop
+
+# size, in pixels, to display art
+# only used if mpv is the display program
+size=1024
+
+# how often, in seconds, the script
+# should check which album is playing
+update=0.1
+
+#######################
+# internal variables, #
+# edit with caution   #
+#######################
+
+album_ascript='tell application "Spotify" to album of current track as string'
+cur_album=""
+f=""
+mpv=false
+mpv_opts="--pause --autofit=$sizex$size --border=no"
+pid=0
+verbose=false
+
+###########################
+# script code starts here #
+###########################
+
+# test if mpv is available
+if hash mpv 2>/dev/null; then
+    mpv=true
+fi
+
+# check if output should be verbose
+if [[ "$1" == "--verbose" ]]; then
+    verbose=true
+fi
+
+# playing()
+# fetch the album currently playing,
+# storing the result in $album,
+# or storing "" if the current album
+# could not be determined
+playing() {
+    album=`osascript -e "$album_ascript" 2>/dev/null`
+}
+
+# file(album_name)
+# build the path for album art file for the
+# given album and store it in $f. If the file
+# does not exist, store "" in $f instead
+file() {
+    f="$art_dir/$1.jpg"
+    if [ ! -f "$f" ]; then
+        log "Art not found, expected file: $f"
+        f=""
+    else
+        log "Using file: $f"
+    fi
+}
+
+# display(album_name)
+# try to display album art for the given album
+display() {
+
+    # kill the existing display, if it exists
+    if [[ "$pid" != 0 ]]; then
+        kill "$pid" 2>/dev/null
+    fi
+    pid=0
+
+    # get the file to display, if there is none
+    # (meaning the art file does not exist),
+    # return without doing anything
+    file "$1"
+    if [[ "$f" == "" ]]; then
+        return
+    fi
+
+    # launch the display program in the background
+    if [[ "$mpv" == true ]]; then
+        mpv $mpv_opts "$f" >/dev/null 2>&1 &
+        pid="$!"
+    else
+        qlmanage -p "$f" >/dev/null 2>&1 &
+        pid="$!"
+    fi
+
+}
+
+# log(str1, ...)
+# print a line with all the arguments, if
+# verbose output is enabled
+log() {
+    if [[ $verbose == true ]]; then
+        printf "$@\n"
+    fi
+}
+
+while :; do
+
+    # grab the album currently playing
+    playing
+
+    # if it's different than the album
+    # being displayed, update the display
+    if [[ $album != $cur_album ]]; then
+        cur_album="$album"
+        log "Now playing '$cur_album'"
+        display "$cur_album"
+    fi
+
+    # ...and sleep until the next loop
+    sleep "$update"
+done
