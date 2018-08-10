@@ -1,18 +1,40 @@
-# spot-art
+# album-art
 
-Display external album art for spotify on macOS
-
-# about
-
-`spot-art` is a bash script to display external album art for the song
-currently playing in spotify. It only works on macOS.
-
-Images are displayed using `mpv`, if installed. Otherwise `qlmanage` (a
-built-in interface to the "quick look" featuer) is used as a fallback.
+Scripts for displaying album art
 
 ![](sa.png)
 
-# usage
+# `cmus-art`
+
+`spot-art` displays external album art for the song
+currently playing in cmus.
+
+Images are displayed using `mpv`, if installed. Otherwise `qlmanage` (a
+built-in interface to the "quick look" feature on macOS) is used as a fallback.
+If you're not on macOS then you should install `mpv`.
+
+## usage
+
+`cmus-art` looks for an image called `cover.jpg` in the album directory, i.e., 
+`$ALBUM/cover.jpg`. You can use the `--verbose` flag to print these locations.
+
+You can also edit the size of the album art (only used in MPV mode) and the
+update rate.
+
+```
+cmus-art [--verbose]
+
+```
+
+# `spot-art`
+
+`spot-art` displays external album art for the song
+currently playing in spotify. It only works on macOS.
+
+Images are displayed using `mpv`, if installed. Otherwise `qlmanage` (a
+built-in interface to the "quick look" feature) is used as a fallback.
+
+## usage
 
 `spot-art` pulls images from an album art directory. This defaults to
 `~/Desktop` for easy testing, but you probably want to change it. Do this by
