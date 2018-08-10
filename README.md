@@ -23,7 +23,6 @@ update rate.
 
 ```
 cmus-art [--verbose]
-
 ```
 
 # `spot-art`
@@ -51,5 +50,4 @@ the exact path the script tries for album art.
 
 ```
 spot-art [--verbose]
-
 ```
